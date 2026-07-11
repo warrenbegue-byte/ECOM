@@ -31,11 +31,22 @@ Envoyer les mutations en **petits lots** (max ~4 opérations par appel) — les 
 - Traduire chaque valeur couleur en français (Black→Noir, Blue→Bleu, DEEP BLUE→Bleu nuit, Pink→Rose, green→Vert, Khaki→Kaki, Light-blue→Bleu clair…).
 - Valeurs corrompues (« only top C », « green B ») : renommer au mieux et signaler à l'utilisateur pour vérification.
 
-## Rattachement
+## Bijoux (colliers, parures…)
+- Nom-personnage aussi (La Riviera, Le Serment, L'Éblouissante…) + descriptif « Collier / Ras-de-Cou / Parure ».
+- Description plus courte : accroche + **Le Détail Précieux** (matière, éclat) + `<ul>` 4 puces + **L'Offre Irrésistible**.
+- Tags : « Bijoux », « Collier » + spécifiques (Doré, Argent, Perles, Ras-de-cou, Cœur…).
+- Options : `Metal Color → Couleur` (si valeurs lisibles) ou `Modèle` (si codes fournisseur), `Gem Color → Pierre`, `Length → Longueur` (valeurs en cm), `Ships From → Expédition`.
+- Valeurs codes fournisseur intraduisibles (ex. « 8097 », « N155 ») : renommer l'option en « Modèle », garder les codes, **signaler à l'utilisateur** (mapping précis = besoin des photos).
+
+## Rattachement & offres
 - Les collections sont **intelligentes** (auto-remplies par tag/vendeur) : bien poser les tags suffit à ranger le produit.
-- Si prix < 20€ → entre automatiquement dans « Glamour à moins de 20€ ».
+- Robes : tag « Robe de soirée » → collections Robes de Soirée + Glamour à moins de 20€ (si prix < 20€, règle = prix ET tag robe).
+- Bijoux : tag « Bijoux » → collection Colliers & Bijoux.
+- L'Offre Duo (-15% dès 2 articles) est scopée à la collection « Robes de Soirée » — ne pas l'étendre aux bijoux sans décision de Warren.
+- Mention livraison dans les fiches : toujours « Livraison offerte dès 29 € » (aligné sur la remise automatique).
 
 ## Rappel technique
-- Toujours `validate_graphql_codeblocks` avant d'exécuter une mutation.
-- Petits lots (≤4 opérations) pour éviter les coupures de connecteur.
+- Toujours `validate_graphql_codeblocks` avant d'exécuter une mutation (si le validateur est indisponible, vérifier les inputs via `graphql_schema`).
+- Le connecteur coupe sur les gros payloads : pour les descriptions, préférer **1 produit par appel, en appels parallèles** ; ≤4 opérations légères (options) par appel sinon.
+- En cas de coupure « stream closed », l'écriture n'est PAS appliquée : re-vérifier l'état puis renvoyer (les productUpdate sont idempotents).
 - Confirmer le résultat produit par produit (userErrors vides).
