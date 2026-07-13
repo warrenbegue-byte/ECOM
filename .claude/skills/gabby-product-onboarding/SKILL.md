@@ -38,6 +38,17 @@ Envoyer les mutations en **petits lots** (max ~4 opérations par appel) — les 
 - Options : `Metal Color → Couleur` (si valeurs lisibles) ou `Modèle` (si codes fournisseur), `Gem Color → Pierre`, `Length → Longueur` (valeurs en cm), `Ships From → Expédition`.
 - Valeurs codes fournisseur intraduisibles (ex. « 8097 », « N155 ») : renommer l'option en « Modèle », garder les codes, **signaler à l'utilisateur** (mapping précis = besoin des photos).
 
+## Politique de prix (obligatoire à chaque nouveau produit)
+- ⚠️ Les imports arrivent à PRIX COÛTANT (price = unitCost) → toujours repricer avant publication.
+- **Robes** : prix = coût max des variantes × ~2, arrondi AU-DESSUS au palier psychologique (…4,99 / …9,99). Marge cible ≥ 50 %.
+- **Bijoux/accessoires** : coût × 2,5-3, plancher 9,99 €. Marge cible 60-75 %.
+- **Pièces premium** (coût > 100 €) : coût × 1,7 arrondi à X9,99 (marge ~40 %).
+- Plancher absolu : marge 30 % sur CHAQUE variante (base = coût de la variante la plus chère si prix unifié).
+- « Lisser » : un seul prix par produit quand les coûts des variantes sont proches (< 15 % d'écart) ; paliers séparés sinon.
+- Paliers en vigueur : 9,99 · 12,99 · 14,99 · 16,99 · 19,99 · 24,99 · 29,99 · 34,99 · 39,99 · 49,99 · 54,99 · 59,99 · 64,99 · 74,99 · 79,99 · 89,99.
+- Pas de compareAtPrice (prix barré) sans historique de prix réel — légalité FR (prix de référence 30 jours).
+- Après repricing : vérifier les collections à règle de prix et les mentions de prix dans les descriptions.
+
 ## Rattachement & offres
 - Les collections sont **intelligentes** (auto-remplies par tag/vendeur) : bien poser les tags suffit à ranger le produit.
 - Robes : tag « Robe de soirée » → collections Robes de Soirée + Glamour à moins de 20€ (si prix < 20€, règle = prix ET tag robe).
