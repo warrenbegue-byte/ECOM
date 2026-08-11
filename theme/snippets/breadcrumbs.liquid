@@ -1,0 +1,111 @@
+{% comment %}
+  Fil d'Ariane — GABBY
+  Rendu depuis layout/theme.liquid, juste avant le contenu principal.
+
+  Le balisage JSON-LD correspondant vit dans snippets/structured-data.liquid :
+  ici on ne s'occupe que de l'affichage. Masqué sur l'accueil et le mot de passe.
+{% endcomment %}
+
+{%- unless request.page_type == 'index' or request.page_type == 'password' or request.page_type == 'cart' -%}
+  <nav class="gabby-breadcrumbs" aria-label="Fil d'Ariane">
+    <ol class="gabby-breadcrumbs__list">
+      <li class="gabby-breadcrumbs__item">
+        <a href="{{ routes.root_url }}">Accueil</a>
+      </li>
+
+      {%- case request.page_type -%}
+        {%- when 'product' -%}
+          {%- if collection and collection.title != blank -%}
+            <li class="gabby-breadcrumbs__item">
+              <a href="{{ collection.url }}">{{ collection.title }}</a>
+            </li>
+          {%- endif -%}
+          <li class="gabby-breadcrumbs__item" aria-current="page">{{ product.title }}</li>
+
+        {%- when 'collection' -%}
+          {%- if collection.handle != blank -%}
+            <li class="gabby-breadcrumbs__item" aria-current="page">{{ collection.title }}</li>
+          {%- endif -%}
+
+        {%- when 'article' -%}
+          <li class="gabby-breadcrumbs__item">
+            <a href="{{ blog.url }}">{{ blog.title }}</a>
+          </li>
+          <li class="gabby-breadcrumbs__item" aria-current="page">{{ article.title }}</li>
+
+        {%- when 'blog' -%}
+          <li class="gabby-breadcrumbs__item" aria-current="page">{{ blog.title }}</li>
+
+        {%- when 'page' -%}
+          <li class="gabby-breadcrumbs__item" aria-current="page">{{ page.title }}</li>
+
+        {%- when 'search' -%}
+          <li class="gabby-breadcrumbs__item" aria-current="page">Recherche</li>
+
+        {%- when '404' -%}
+          <li class="gabby-breadcrumbs__item" aria-current="page">Page introuvable</li>
+
+        {%- else -%}
+          {%- if page_title != blank -%}
+            <li class="gabby-breadcrumbs__item" aria-current="page">{{ page_title }}</li>
+          {%- endif -%}
+      {%- endcase -%}
+    </ol>
+  </nav>
+
+  <style>
+    .gabby-breadcrumbs {
+      max-width: var(--page-width, 1400px);
+      margin-inline: auto;
+      padding: 1rem var(--page-margin, 2rem) 0;
+      font-size: 0.8125rem;
+      line-height: 1.4;
+    }
+
+    .gabby-breadcrumbs__list {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.5rem;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .gabby-breadcrumbs__item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      opacity: 0.7;
+    }
+
+    .gabby-breadcrumbs__item + .gabby-breadcrumbs__item::before {
+      content: "/";
+      opacity: 0.5;
+      speak: never;
+    }
+
+    .gabby-breadcrumbs__item a {
+      color: inherit;
+      text-decoration: none;
+      border-bottom: 1px solid transparent;
+      transition: border-color 0.2s ease;
+    }
+
+    .gabby-breadcrumbs__item a:hover,
+    .gabby-breadcrumbs__item a:focus-visible {
+      border-bottom-color: currentColor;
+    }
+
+    .gabby-breadcrumbs__item[aria-current="page"] {
+      opacity: 1;
+    }
+
+    @media screen and (max-width: 749px) {
+      .gabby-breadcrumbs {
+        padding-inline: 1.25rem;
+        font-size: 0.75rem;
+      }
+    }
+  </style>
+{%- endunless -%}

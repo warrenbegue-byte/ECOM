@@ -1,0 +1,310 @@
+{% comment %}
+  Données structurées JSON-LD — GABBY
+  Rendu depuis layout/theme.liquid, dans le <head>.
+
+  Chaque entité est émise dans son propre <script> plutôt que dans un @graph unique :
+  cela évite les virgules conditionnelles fragiles en Liquid, et Google traite
+  indifféremment les deux formes.
+
+  Volontairement ABSENT : aggregateRating / review.
+  La boutique n'a aucun avis client réel à ce jour ; en déclarer serait du spam
+  structuré (pénalité manuelle Google) et une pratique commerciale trompeuse.
+  À rebrancher le jour où une app d'avis vérifiés est installée.
+{% endcomment %}
+
+{%- liquid
+  assign origin = request.origin
+  assign logo_src = ''
+  if settings.logo != blank
+    assign logo_src = settings.logo | image_url: width: 512
+  endif
+-%}
+
+{%- comment -%} ---------- Identité de la marque ---------- {%- endcomment -%}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "OnlineStore",
+  "@id": "{{ origin }}/#organization",
+  "name": {{ shop.name | json }},
+  "url": "{{ origin }}",
+  "slogan": "Le glamour n'a pas de prix.",
+  "email": {{ shop.email | json }},
+  "inLanguage": "fr-FR",
+  "currenciesAccepted": {{ cart.currency.iso_code | json }},
+  {%- if logo_src != blank %}
+  "logo": {
+    "@type": "ImageObject",
+    "url": "https:{{ logo_src }}"
+  },
+  "image": "https:{{ logo_src }}",
+  {%- endif %}
+  {%- if shop.address.address1 != blank %}
+  "address": {
+    "@type": "PostalAddress",
+    "streetAddress": {{ shop.address.address1 | json }},
+    "postalCode": {{ shop.address.zip | json }},
+    "addressCountry": "FR"
+  },
+  {%- endif %}
+  "contactPoint": {
+    "@type": "ContactPoint",
+    "contactType": "customer service",
+    "email": {{ shop.email | json }},
+    "availableLanguage": ["fr"]
+  }
+}
+</script>
+
+{%- comment -%} ---------- Site + recherche interne ---------- {%- endcomment -%}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "@id": "{{ origin }}/#website",
+  "url": "{{ origin }}",
+  "name": {{ shop.name | json }},
+  "inLanguage": "fr-FR",
+  "publisher": { "@id": "{{ origin }}/#organization" },
+  "potentialAction": {
+    "@type": "SearchAction",
+    "target": {
+      "@type": "EntryPoint",
+      "urlTemplate": "{{ origin }}/search?q={search_term_string}"
+    },
+    "query-input": "required name=search_term_string"
+  }
+}
+</script>
+
+{%- comment -%} ---------- Produit ---------- {%- endcomment -%}
+{%- if request.page_type == 'product' and product != blank -%}
+  {%- assign current_variant = product.selected_or_first_available_variant -%}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Product",
+  "@id": "{{ origin }}{{ product.url }}#product",
+  "name": {{ product.title | json }},
+  "url": "{{ origin }}{{ product.url }}",
+  "description": {{ product.description | strip_html | strip_newlines | truncate: 500 | json }},
+  "brand": {
+    "@type": "Brand",
+    "name": "GABBY"
+  },
+  {%- if product.images.size > 0 %}
+  "image": [
+    {%- for image in product.images limit: 5 -%}
+      "https:{{ image | image_url: width: 1400 }}"{%- unless forloop.last -%},{%- endunless -%}
+    {%- endfor -%}
+  ],
+  {%- endif %}
+  {%- if current_variant.sku != blank %}
+  "sku": {{ current_variant.sku | json }},
+  {%- endif %}
+  {%- if product.type != blank %}
+  "category": {{ product.type | json }},
+  {%- endif %}
+  "offers": {
+    {%- if product.price_varies %}
+    "@type": "AggregateOffer",
+    "lowPrice": "{{ product.price_min | divided_by: 100.0 | round: 2 }}",
+    "highPrice": "{{ product.price_max | divided_by: 100.0 | round: 2 }}",
+    "offerCount": {{ product.variants.size }},
+    {%- else %}
+    "@type": "Offer",
+    "price": "{{ product.price | divided_by: 100.0 | round: 2 }}",
+    {%- endif %}
+    "priceCurrency": {{ cart.currency.iso_code | json }},
+    "availability": "{% if product.available %}https://schema.org/InStock{% else %}https://schema.org/OutOfStock{% endif %}",
+    "itemCondition": "https://schema.org/NewCondition",
+    "url": "{{ origin }}{{ product.url }}",
+    "seller": { "@id": "{{ origin }}/#organization" },
+    "hasMerchantReturnPolicy": {
+      "@type": "MerchantReturnPolicy",
+      "applicableCountry": "FR",
+      "returnPolicyCategory": "https://schema.org/MerchantReturnFiniteReturnWindow",
+      "merchantReturnDays": 30,
+      "returnMethod": "https://schema.org/ReturnByMail"
+    }
+  }
+}
+</script>
+{%- endif -%}
+
+{%- comment -%} ---------- Article de blog ---------- {%- endcomment -%}
+{%- if request.page_type == 'article' and article != blank -%}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "@id": "{{ origin }}{{ article.url }}#article",
+  "headline": {{ article.title | json }},
+  "url": "{{ origin }}{{ article.url }}",
+  "datePublished": "{{ article.published_at | date: '%Y-%m-%dT%H:%M:%S%z' }}",
+  "dateModified": "{{ article.updated_at | default: article.published_at | date: '%Y-%m-%dT%H:%M:%S%z' }}",
+  {%- if article.excerpt_or_content != blank %}
+  "description": {{ article.excerpt_or_content | strip_html | strip_newlines | truncate: 300 | json }},
+  {%- endif %}
+  {%- if article.image %}
+  "image": "https:{{ article.image | image_url: width: 1400 }}",
+  {%- endif %}
+  "inLanguage": "fr-FR",
+  "author": {
+    "@type": "Organization",
+    "name": {{ shop.name | json }}
+  },
+  "publisher": { "@id": "{{ origin }}/#organization" },
+  "mainEntityOfPage": "{{ origin }}{{ article.url }}"
+}
+</script>
+{%- endif -%}
+
+{%- comment -%} ---------- Fil d'Ariane ---------- {%- endcomment -%}
+{%- unless request.page_type == 'index' or request.page_type == 'password' -%}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Accueil",
+      "item": "{{ origin }}"
+    }
+    {%- case request.page_type -%}
+      {%- when 'product' -%}
+        {%- if collection and collection.title != blank %},
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": {{ collection.title | json }},
+          "item": "{{ origin }}{{ collection.url }}"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": {{ product.title | json }},
+          "item": "{{ origin }}{{ product.url }}"
+        }
+        {%- else %},
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": {{ product.title | json }},
+          "item": "{{ origin }}{{ product.url }}"
+        }
+        {%- endif -%}
+      {%- when 'collection' -%},
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": {{ collection.title | json }},
+          "item": "{{ origin }}{{ collection.url }}"
+        }
+      {%- when 'article' -%},
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": {{ blog.title | json }},
+          "item": "{{ origin }}{{ blog.url }}"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": {{ article.title | json }},
+          "item": "{{ origin }}{{ article.url }}"
+        }
+      {%- when 'blog' -%},
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": {{ blog.title | json }},
+          "item": "{{ origin }}{{ blog.url }}"
+        }
+      {%- when 'page' -%},
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": {{ page.title | json }},
+          "item": "{{ origin }}{{ page.url }}"
+        }
+    {%- endcase -%}
+  ]
+}
+</script>
+{%- endunless -%}
+
+{%- comment -%}
+  ---------- FAQ ----------
+  Les questions sont recopiées depuis /pages/faq. Si vous modifiez la page,
+  mettez ce bloc à jour : Google exige que le balisage corresponde au texte visible.
+{%- endcomment -%}
+{%- if request.page_type == 'page' and page.handle == 'faq' -%}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "inLanguage": "fr-FR",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "Quels sont les délais de livraison ?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Votre commande est préparée sous 1 à 3 jours ouvrés. S'ajoute ensuite le délai d'acheminement du transporteur. Vous recevez un numéro de suivi par e-mail dès l'expédition."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "La livraison est-elle offerte ?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Oui, la livraison est offerte dès 29 € d'achat. En dessous de ce montant, les frais sont calculés automatiquement au moment du paiement, avant validation de votre commande."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Comment choisir ma taille ?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Nos robes sont taillées pour épouser la silhouette. Prenez vos mensurations en sous-vêtements avec un mètre ruban souple, puis comparez-les à notre guide des tailles. En cas d'hésitation sur une coupe très moulante, privilégiez la taille au-dessus."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Puis-je retourner un article ?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Oui. Vous bénéficiez du droit de rétractation légal de 14 jours, que GABBY étend volontairement à 30 jours après réception. L'article doit être retourné non porté, non lavé, dans son emballage d'origine et avec ses étiquettes."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Sous quel délai suis-je remboursé ?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Dès réception et vérification de votre retour, le remboursement est effectué sur votre moyen de paiement d'origine. Le délai légal maximum est de 14 jours ; nous nous efforçons de faire beaucoup plus vite."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Vos bijoux noircissent-ils ?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Nos bijoux en acier inoxydable 316L sont conçus pour résister à l'eau et à l'oxydation : ils ne noircissent pas et ne verdissent pas la peau. Les pièces plaquées or ou en argent 925 demandent davantage de précaution."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Le paiement est-il sécurisé ?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Oui. L'intégralité du site est chiffrée en HTTPS et les paiements sont traités par des prestataires certifiés. GABBY n'a jamais accès à votre numéro de carte bancaire et ne le conserve pas."
+      }
+    }
+  ]
+}
+</script>
+{%- endif -%}

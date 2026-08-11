@@ -1,0 +1,163 @@
+{% doc %}
+  Renders all meta tags for the page including Open Graph, Twitter Cards, and SEO tags.
+
+  @param {object} [product] - The product object, available on product pages for price meta tags.
+{% enddoc %}
+
+{% comment %}
+  Modifications GABBY :
+  - og:image dispose enfin d'un repli (le logo) quand la page n'a pas d'image propre.
+    Sans lui, un partage de la page d'accueil ou d'une page CMS s'affichait
+    en carte grise sur Facebook, WhatsApp et LinkedIn.
+  - Ajout de og:locale et twitter:image.
+  - theme-color renseigné (barre d'adresse mobile).
+  - Suffixes de <title> traduits en français.
+{% endcomment %}
+
+<meta charset="utf-8">
+<meta
+  http-equiv="X-UA-Compatible"
+  content="IE=edge"
+>
+<meta
+  name="viewport"
+  content="width=device-width,initial-scale=1"
+>
+<meta
+  name="theme-color"
+  content="{{ settings.color_palette.background | default: '#FBF9F6' }}"
+>
+
+{%- liquid
+  assign og_title = page_title | default: shop.name
+  assign og_url = canonical_url | default: request.origin
+  assign og_type = 'website'
+  assign og_description = page_description | default: shop.description | default: shop.name
+
+  if request.page_type == 'product'
+    assign og_type = 'product'
+  elsif request.page_type == 'article'
+    assign og_type = 'article'
+  elsif request.page_type == 'password'
+    assign og_url = request.origin
+  endif
+
+  assign og_image_src = ''
+  assign og_image_width = ''
+  assign og_image_height = ''
+
+  if page_image
+    assign og_image_src = page_image | image_url: width: 1200
+    assign og_image_width = page_image.width
+    assign og_image_height = page_image.height
+  elsif settings.logo != blank
+    assign og_image_src = settings.logo | image_url: width: 1200
+    assign og_image_width = settings.logo.width
+    assign og_image_height = settings.logo.height
+  endif
+-%}
+
+<meta
+  property="og:site_name"
+  content="{{ shop.name }}"
+>
+<meta
+  property="og:url"
+  content="{{ og_url }}"
+>
+<meta
+  property="og:title"
+  content="{{ og_title | escape }}"
+>
+<meta
+  property="og:type"
+  content="{{ og_type }}"
+>
+<meta
+  property="og:description"
+  content="{{ og_description | escape }}"
+>
+<meta
+  property="og:locale"
+  content="{{ request.locale.iso_code | default: 'fr' | replace: '-', '_' }}"
+>
+
+{%- if og_image_src != blank -%}
+  <meta
+    property="og:image"
+    content="https:{{ og_image_src }}"
+  >
+  <meta
+    property="og:image:secure_url"
+    content="https:{{ og_image_src }}"
+  >
+  {%- if og_image_width != blank -%}
+    <meta
+      property="og:image:width"
+      content="{{ og_image_width }}"
+    >
+    <meta
+      property="og:image:height"
+      content="{{ og_image_height }}"
+    >
+  {%- endif -%}
+  <meta
+    property="og:image:alt"
+    content="{{ og_title | escape }}"
+  >
+{%- endif -%}
+
+{%- if request.page_type == 'product' -%}
+  <meta
+    property="og:price:amount"
+    content="{{ product.price | money_without_currency | strip_html }}"
+  >
+  <meta
+    property="og:price:currency"
+    content="{{ cart.currency.iso_code }}"
+  >
+{%- endif -%}
+
+{%- if settings.social_twitter_link != blank -%}
+  <meta
+    name="twitter:site"
+    content="{{ settings.social_twitter_link | split: 'twitter.com/' | last | prepend: '@' }}"
+  >
+{%- endif -%}
+<meta
+  name="twitter:card"
+  content="summary_large_image"
+>
+<meta
+  name="twitter:title"
+  content="{{ og_title | escape }}"
+>
+<meta
+  name="twitter:description"
+  content="{{ og_description | escape }}"
+>
+{%- if og_image_src != blank -%}
+  <meta
+    name="twitter:image"
+    content="https:{{ og_image_src }}"
+  >
+{%- endif -%}
+
+<title>
+  {{ page_title }}
+  {%- if current_tags %} &ndash; filtré par « {{ current_tags | join: ', ' }} »{% endif -%}
+  {%- if current_page != 1 %} &ndash; Page {{ current_page }}{% endif -%}
+  {%- unless page_title contains shop.name %} &ndash; {{ shop.name }}{% endunless -%}
+</title>
+
+<link
+  rel="canonical"
+  href="{{ canonical_url }}"
+>
+
+{% if page_description %}
+  <meta
+    name="description"
+    content="{{ page_description | escape }}"
+  >
+{% endif %}

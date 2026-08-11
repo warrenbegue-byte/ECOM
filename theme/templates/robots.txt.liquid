@@ -1,0 +1,45 @@
+{% comment %}
+  robots.txt — GABBY
+
+  On repart des groupes par défaut de Shopify (ils bloquent déjà /checkout,
+  /cart, /account, /search…) puis on ajoute des règles maison.
+
+  Objectif principal : protéger le budget de crawl. Les collections filtrées
+  génèrent des milliers d'URL quasi identiques (?filter.v.option.taille=M&…)
+  qui diluent le crawl sans jamais se positionner.
+{% endcomment %}
+{%- for group in robots.default_groups -%}
+  {{ group.user_agent }}
+  {%- for rule in group.rules %}
+  {{ rule }}
+  {%- endfor -%}
+
+  {%- if group.user_agent.value == '*' %}
+
+  # --- Règles GABBY ---
+  # Navigation à facettes : une seule facette suffit à Google, pas les combinaisons
+  Disallow: /*filter.v.option*&filter*
+  Disallow: /*filter.p.*&filter*
+  Disallow: /*?*sort_by*&*filter*
+  # Paramètres de tri : contenu identique, ordre différent
+  Disallow: /*?sort_by=
+  Disallow: /*&sort_by=
+  # Pagination profonde et vues alternatives
+  Disallow: /*?view=
+  Disallow: /*&view=
+  # Suivi publicitaire : évite la duplication d'URL en index
+  Disallow: /*?utm_
+  Disallow: /*&utm_
+  Disallow: /*?fbclid=
+  Disallow: /*?gclid=
+  Disallow: /*?ttclid=
+  # Redirections internes et pages techniques
+  Disallow: /*/redirect
+  Disallow: /*.atom$
+  {%- endif -%}
+
+  {%- if group.sitemap != blank %}
+  {{ group.sitemap }}
+  {%- endif %}
+
+{% endfor -%}
