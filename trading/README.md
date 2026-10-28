@@ -97,20 +97,20 @@ doubler après une perte, trader les annonces sans stop, et confondre taux de r�
 
 ---
 
-## 📈 Résultats honnêtes (60 derniers jours, Yahoo, 5 min, octobre 2026)
+## 📈 Résultats après optimisation (3,75 ans de données, détail dans [`RESULTATS.md`](RESULTATS.md))
 
-| Test | Trades | Réussite | Profit factor | Espérance |
-|------|-------:|---------:|--------------:|----------:|
-| ORB NY sur QQQ (paramètres par défaut) | 59 | 44 % | 0,76 | −0,11 R |
-| Bot or sur GC=F (paramètres par défaut) | 140 | 41 % | 0,98 | −0,01 R |
-| Walk-forward ORB sur QQQ | 36 hors échantillon | — | — | −0,13 R → **rejeté** |
+| Bot | Hors échantillon | 2026 jamais vu | Verdict |
+|-----|-----------------:|---------------:|---------|
+| ORB NY sur Nasdaq | −0,04 R/trade | −0,08 R | ❌ Rejeté |
+| ORB sur l'or (8h20 NY) | +0,09 R (1 pli positif sur 4) | +0,04 R | ⚠️ Fragile |
+| Bot or M5 (achat seul) | +0,05 R | +0,08 R | ✅ Validé pour la démo* |
+| **Bot or M15 (achat seul)** | **+0,12 R** | **+0,09 R** | ✅ **Validé pour la démo*** |
+| Bot or M15 achat + vente | +0,02 R | +0,01 R | ⚠️ Fragile |
 
-Aucune des deux stratégies n'a d'avantage prouvé sur cette période courte. C'est **normal** et c'est
-le vrai message : les reels montrent les meilleurs moments, pas la moyenne. Avant tout passage en
-réel, exigez : ≥ 1 an de données (export MT5), ≥ 200 trades, walk-forward « ROBUSTE », puis
-≥ 1 mois en démo avec des résultats cohérents avec le backtest.
-
----
+\* Validés **parce que l'or a monté de 129 %** : sur un marché baissier simulé, le bot or M15 perd −42 R.
+C'est un suiveur de tendance haussière, à mettre en pause si l'or casse sa tendance.
+Challenge prop firm (10 % / 10 % / 5 %, 60 jours) : ~58 % de réussite à 2 % de risque, contre ~41 %
+sans avantage. Avant tout argent réel : ≥ 1 mois de démo cohérent avec ces chiffres.
 
 ## 🗂️ Structure
 

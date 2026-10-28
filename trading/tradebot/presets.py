@@ -34,3 +34,7 @@ PRESETS = {
     }},
 }
 PRESETS["gold_breakout_m15"] = {**PRESETS["gold_breakout"], "resample": "15min"}
+
+# Version symétrique (achat + vente) : ne parie pas sur la hausse de l'or 2023-2026.
+_sym_grid = {k: v for k, v in PRESETS["gold_breakout"]["grid"].items() if k != "direction"}
+PRESETS["gold_breakout_m15_both"] = {**PRESETS["gold_breakout_m15"], "grid": _sym_grid, "fixed": {"direction": "both"}}

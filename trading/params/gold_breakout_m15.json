@@ -1,0 +1,321 @@
+{
+  "name": "gold_breakout_m15",
+  "strategy": "gold",
+  "market": "xauusd",
+  "created": "2026-10-28",
+  "data": {
+    "start": "2023-01-02",
+    "end": "2026-10-01",
+    "holdout_start": "2026-01-01",
+    "bars": 85535
+  },
+  "costs": {
+    "spread": 0.25,
+    "commission": 0.0,
+    "point_value": 100.0,
+    "qty_step": 0.01,
+    "min_qty": 0.0
+  },
+  "resample": "15min",
+  "grid": {
+    "donchian": [
+      10,
+      20,
+      40
+    ],
+    "atr_mult": [
+      1.0,
+      2.0,
+      3.0
+    ],
+    "rr": [
+      0,
+      1.5,
+      3.0
+    ],
+    "trail_atr": [
+      0,
+      3.0
+    ],
+    "breakeven_r": [
+      0,
+      1.0
+    ],
+    "start_hour_utc": [
+      0,
+      7,
+      12
+    ],
+    "end_hour_utc": [
+      20,
+      24
+    ],
+    "direction": [
+      "both",
+      "long"
+    ]
+  },
+  "fixed": {},
+  "params": {
+    "donchian": 40,
+    "atr_mult": 3.0,
+    "rr": 3.0,
+    "trail_atr": 3.0,
+    "breakeven_r": 0,
+    "start_hour_utc": 0,
+    "end_hour_utc": 24,
+    "direction": "long"
+  },
+  "development": {
+    "trades": 564,
+    "win_rate": 0.42021276595744683,
+    "profit_factor": 1.3773136165218833,
+    "expectancy_r": 0.1467585992389079,
+    "tstat": 2.8226671173324545,
+    "total_r": 82.77184997074406,
+    "max_dd_r": 20.797340603492415
+  },
+  "walk_forward": {
+    "folds": [
+      {
+        "fold": 1,
+        "test": "2024-01→2024-07",
+        "params": {
+          "donchian": 10,
+          "atr_mult": 3.0,
+          "rr": 3.0,
+          "trail_atr": 3.0,
+          "breakeven_r": 1.0,
+          "start_hour_utc": 12,
+          "end_hour_utc": 24,
+          "direction": "long"
+        },
+        "is": {
+          "trades": 143,
+          "win_rate": 0.4405594405594406,
+          "profit_factor": 1.4196512835199198,
+          "expectancy_r": 0.17567734203214874,
+          "tstat": 1.5807221206697104,
+          "total_r": 25.12185991059727,
+          "max_dd_r": 6.428132669994327
+        },
+        "oos": {
+          "trades": 100,
+          "win_rate": 0.33,
+          "profit_factor": 0.9202512758149698,
+          "expectancy_r": -0.033148814980307126,
+          "tstat": -0.3178622254772026,
+          "total_r": -3.314881498030713,
+          "max_dd_r": 8.714915893997302
+        }
+      },
+      {
+        "fold": 2,
+        "test": "2024-07→2025-01",
+        "params": {
+          "donchian": 40,
+          "atr_mult": 3.0,
+          "rr": 3.0,
+          "trail_atr": 3.0,
+          "breakeven_r": 1.0,
+          "start_hour_utc": 0,
+          "end_hour_utc": 24,
+          "direction": "long"
+        },
+        "is": {
+          "trades": 175,
+          "win_rate": 0.42857142857142855,
+          "profit_factor": 1.5498309751526407,
+          "expectancy_r": 0.19636370124035296,
+          "tstat": 2.0816550869514434,
+          "total_r": 34.36364771706177,
+          "max_dd_r": 5.923482633470969
+        },
+        "oos": {
+          "trades": 105,
+          "win_rate": 0.3619047619047619,
+          "profit_factor": 1.0528602939930405,
+          "expectancy_r": 0.023140836985051073,
+          "tstat": 0.20045300444571906,
+          "total_r": 2.429787883430363,
+          "max_dd_r": 5.784908799076392
+        }
+      },
+      {
+        "fold": 3,
+        "test": "2025-01→2025-07",
+        "params": {
+          "donchian": 40,
+          "atr_mult": 3.0,
+          "rr": 3.0,
+          "trail_atr": 3.0,
+          "breakeven_r": 0,
+          "start_hour_utc": 0,
+          "end_hour_utc": 24,
+          "direction": "long"
+        },
+        "is": {
+          "trades": 195,
+          "win_rate": 0.38461538461538464,
+          "profit_factor": 1.1963147295487486,
+          "expectancy_r": 0.07846464822015109,
+          "tstat": 0.928531305551005,
+          "total_r": 15.300606402929462,
+          "max_dd_r": 5.784908799076398
+        },
+        "oos": {
+          "trades": 111,
+          "win_rate": 0.44144144144144143,
+          "profit_factor": 1.5644934377205686,
+          "expectancy_r": 0.2026321709788793,
+          "tstat": 1.756101852667416,
+          "total_r": 22.492170978655604,
+          "max_dd_r": 7.665252796301398
+        }
+      },
+      {
+        "fold": 4,
+        "test": "2025-07→2026-01",
+        "params": {
+          "donchian": 40,
+          "atr_mult": 3.0,
+          "rr": 3.0,
+          "trail_atr": 0,
+          "breakeven_r": 0,
+          "start_hour_utc": 0,
+          "end_hour_utc": 24,
+          "direction": "long"
+        },
+        "is": {
+          "trades": 155,
+          "win_rate": 0.3419354838709677,
+          "profit_factor": 1.5588235294117647,
+          "expectancy_r": 0.36774193548387096,
+          "tstat": 2.4051225160945715,
+          "total_r": 57.0,
+          "max_dd_r": 11.0
+        },
+        "oos": {
+          "trades": 85,
+          "win_rate": 0.32941176470588235,
+          "profit_factor": 1.464307744690435,
+          "expectancy_r": 0.3133530518424297,
+          "tstat": 1.5248499355636729,
+          "total_r": 26.63500940660652,
+          "max_dd_r": 8.0
+        }
+      }
+    ],
+    "oos": {
+      "trades": 401,
+      "win_rate": 0.3690773067331671,
+      "profit_factor": 1.2611312725906714,
+      "expectancy_r": 0.12030445578718647,
+      "tstat": 1.789984892939174,
+      "total_r": 48.24208677066178,
+      "max_dd_r": 8.714915893997302
+    },
+    "positive_folds": 3,
+    "n_folds": 4
+  },
+  "holdout": {
+    "trades": 120,
+    "win_rate": 0.2916666666666667,
+    "profit_factor": 1.2270037082302143,
+    "expectancy_r": 0.09303316348926029,
+    "tstat": 0.7503439361262393,
+    "total_r": 11.163979618711235,
+    "max_dd_r": 14.447564652769785
+  },
+  "holdout_stress_2x_costs": {
+    "trades": 120,
+    "win_rate": 0.2916666666666667,
+    "profit_factor": 1.2067905443276246,
+    "expectancy_r": 0.08571183220067774,
+    "tstat": 0.692308544660572,
+    "total_r": 10.285419864081328,
+    "max_dd_r": 14.642706657969693
+  },
+  "prop": {
+    "rules": {
+      "target_pct": 10.0,
+      "max_loss_pct": 10.0,
+      "daily_loss_pct": 5.0,
+      "max_days": 60
+    },
+    "best": {
+      "risk_pct": 2.0,
+      "pass": 0.5796,
+      "fail": 0.3135,
+      "timeout": 0.1069,
+      "median_days": 19.0
+    },
+    "table": [
+      {
+        "risk_pct": 0.25,
+        "pass": 0.0,
+        "fail": 0.0,
+        "timeout": 1.0,
+        "median_days": NaN
+      },
+      {
+        "risk_pct": 0.5,
+        "pass": 0.0524,
+        "fail": 0.0012,
+        "timeout": 0.9464,
+        "median_days": 47.0
+      },
+      {
+        "risk_pct": 0.75,
+        "pass": 0.2081,
+        "fail": 0.0212,
+        "timeout": 0.7707,
+        "median_days": 40.0
+      },
+      {
+        "risk_pct": 1.0,
+        "pass": 0.3448,
+        "fail": 0.0756,
+        "timeout": 0.5796,
+        "median_days": 34.0
+      },
+      {
+        "risk_pct": 1.5,
+        "pass": 0.5286,
+        "fail": 0.2054,
+        "timeout": 0.266,
+        "median_days": 26.0
+      },
+      {
+        "risk_pct": 2.0,
+        "pass": 0.5796,
+        "fail": 0.3135,
+        "timeout": 0.1069,
+        "median_days": 19.0
+      }
+    ]
+  },
+  "verdict": "VALIDÉ pour la démo",
+  "yearly_r": {
+    "2023": {
+      "trades": 151,
+      "total_r": 14.23,
+      "expectancy_r": 0.094
+    },
+    "2024": {
+      "trades": 195,
+      "total_r": 15.3,
+      "expectancy_r": 0.078
+    },
+    "2025": {
+      "trades": 218,
+      "total_r": 53.24,
+      "expectancy_r": 0.244
+    },
+    "2026": {
+      "trades": 120,
+      "total_r": 11.16,
+      "expectancy_r": 0.093
+    }
+  }
+}
