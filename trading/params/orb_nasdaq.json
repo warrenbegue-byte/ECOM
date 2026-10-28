@@ -1,0 +1,311 @@
+{
+  "name": "orb_nasdaq",
+  "strategy": "orb",
+  "market": "nsxusd",
+  "created": "2026-10-28",
+  "data": {
+    "start": "2023-01-02",
+    "end": "2026-10-01",
+    "holdout_start": "2026-01-01",
+    "bars": 247381
+  },
+  "costs": {
+    "spread": 1.5,
+    "commission": 0.0,
+    "point_value": 1.0,
+    "qty_step": 0.1,
+    "min_qty": 0.0
+  },
+  "resample": null,
+  "grid": {
+    "entry": [
+      "breakout",
+      "candle"
+    ],
+    "range_minutes": [
+      5,
+      15,
+      30
+    ],
+    "stop_mode": [
+      "range",
+      "atr"
+    ],
+    "stop_atr": [
+      0.05,
+      0.1,
+      0.2
+    ],
+    "rr": [
+      0,
+      1.5,
+      3.0
+    ],
+    "trend": [
+      "none",
+      "sma20"
+    ],
+    "direction": [
+      "both",
+      "long"
+    ]
+  },
+  "fixed": {},
+  "params": {
+    "entry": "breakout",
+    "range_minutes": 5,
+    "stop_mode": "atr",
+    "stop_atr": 0.2,
+    "rr": 1.5,
+    "trend": "sma20",
+    "direction": "both"
+  },
+  "development": {
+    "trades": 519,
+    "win_rate": 0.4720616570327553,
+    "profit_factor": 1.230365049839204,
+    "expectancy_r": 0.12121420510968585,
+    "tstat": 2.2659860098023383,
+    "total_r": 62.910172451926954,
+    "max_dd_r": 12.607573089100867
+  },
+  "walk_forward": {
+    "folds": [
+      {
+        "fold": 1,
+        "test": "2024-01→2024-07",
+        "params": {
+          "entry": "breakout",
+          "range_minutes": 30,
+          "stop_mode": "range",
+          "stop_atr": 0.1,
+          "rr": 1.5,
+          "trend": "sma20",
+          "direction": "both"
+        },
+        "is": {
+          "trades": 99,
+          "win_rate": 0.6262626262626263,
+          "profit_factor": 1.6263188268586537,
+          "expectancy_r": 0.18876876138294255,
+          "tstat": 2.072046390832742,
+          "total_r": 18.68810737691131,
+          "max_dd_r": 3.348522167487733
+        },
+        "oos": {
+          "trades": 72,
+          "win_rate": 0.4583333333333333,
+          "profit_factor": 1.2224884677114762,
+          "expectancy_r": 0.09016195435068743,
+          "tstat": 0.7463308824675798,
+          "total_r": 6.491660713249495,
+          "max_dd_r": 9.321893332359636
+        }
+      },
+      {
+        "fold": 2,
+        "test": "2024-07→2025-01",
+        "params": {
+          "entry": "breakout",
+          "range_minutes": 15,
+          "stop_mode": "range",
+          "stop_atr": 0.1,
+          "rr": 1.5,
+          "trend": "sma20",
+          "direction": "both"
+        },
+        "is": {
+          "trades": 150,
+          "win_rate": 0.5266666666666666,
+          "profit_factor": 1.3605010250132634,
+          "expectancy_r": 0.14852900775995648,
+          "tstat": 1.7089231947809682,
+          "total_r": 22.27935116399347,
+          "max_dd_r": 11.053531768302994
+        },
+        "oos": {
+          "trades": 88,
+          "win_rate": 0.5113636363636364,
+          "profit_factor": 1.2757837381190131,
+          "expectancy_r": 0.12145736788998063,
+          "tstat": 1.0629013373102223,
+          "total_r": 10.688248374318295,
+          "max_dd_r": 9.862475112410488
+        }
+      },
+      {
+        "fold": 3,
+        "test": "2025-01→2025-07",
+        "params": {
+          "entry": "candle",
+          "range_minutes": 30,
+          "stop_mode": "atr",
+          "stop_atr": 0.2,
+          "rr": 3.0,
+          "trend": "none",
+          "direction": "both"
+        },
+        "is": {
+          "trades": 259,
+          "win_rate": 0.38996138996138996,
+          "profit_factor": 1.4437325963149925,
+          "expectancy_r": 0.259117511251749,
+          "tstat": 2.5057570643806266,
+          "total_r": 67.11143541420299,
+          "max_dd_r": 11.945882581578486
+        },
+        "oos": {
+          "trades": 127,
+          "win_rate": 0.29133858267716534,
+          "profit_factor": 0.662356311068931,
+          "expectancy_r": -0.226943582851635,
+          "tstat": -2.0061565285282312,
+          "total_r": -28.821835022157643,
+          "max_dd_r": 28.82183502215764
+        }
+      },
+      {
+        "fold": 4,
+        "test": "2025-07→2026-01",
+        "params": {
+          "entry": "candle",
+          "range_minutes": 5,
+          "stop_mode": "atr",
+          "stop_atr": 0.2,
+          "rr": 3.0,
+          "trend": "sma20",
+          "direction": "both"
+        },
+        "is": {
+          "trades": 130,
+          "win_rate": 0.4153846153846154,
+          "profit_factor": 1.560787459290704,
+          "expectancy_r": 0.3228282869141505,
+          "tstat": 2.1686863143294133,
+          "total_r": 41.96767729883956,
+          "max_dd_r": 7.503422594267981
+        },
+        "oos": {
+          "trades": 71,
+          "win_rate": 0.323943661971831,
+          "profit_factor": 0.9382744508210891,
+          "expectancy_r": -0.041482474132605696,
+          "tstat": -0.23282229391297493,
+          "total_r": -2.945255663415004,
+          "max_dd_r": 10.819987024276648
+        }
+      }
+    ],
+    "oos": {
+      "trades": 358,
+      "win_rate": 0.3854748603351955,
+      "profit_factor": 0.9274307299335115,
+      "expectancy_r": -0.04074631731286272,
+      "tstat": -0.623928230530236,
+      "total_r": -14.587181598004854,
+      "max_dd_r": 34.29524397226772
+    },
+    "positive_folds": 2,
+    "n_folds": 4
+  },
+  "holdout": {
+    "trades": 140,
+    "win_rate": 0.37857142857142856,
+    "profit_factor": 0.8769590427640582,
+    "expectancy_r": -0.07488380363555676,
+    "tstat": -0.7497987392626974,
+    "total_r": -10.483732508977946,
+    "max_dd_r": 14.97803263530377
+  },
+  "holdout_stress_2x_costs": {
+    "trades": 140,
+    "win_rate": 0.37857142857142856,
+    "profit_factor": 0.8751520082325994,
+    "expectancy_r": -0.07600661302729689,
+    "tstat": -0.7613935934968539,
+    "total_r": -10.640925823821565,
+    "max_dd_r": 14.99467730286125
+  },
+  "prop": {
+    "rules": {
+      "target_pct": 10.0,
+      "max_loss_pct": 10.0,
+      "daily_loss_pct": 5.0,
+      "max_days": 60
+    },
+    "best": {
+      "risk_pct": 2.0,
+      "pass": 0.3511,
+      "fail": 0.5484,
+      "timeout": 0.1005,
+      "median_days": 19.0
+    },
+    "table": [
+      {
+        "risk_pct": 0.25,
+        "pass": 0.0,
+        "fail": 0.0,
+        "timeout": 1.0,
+        "median_days": NaN
+      },
+      {
+        "risk_pct": 0.5,
+        "pass": 0.0055,
+        "fail": 0.012,
+        "timeout": 0.9825,
+        "median_days": 44.0
+      },
+      {
+        "risk_pct": 0.75,
+        "pass": 0.0515,
+        "fail": 0.1138,
+        "timeout": 0.8347,
+        "median_days": 41.0
+      },
+      {
+        "risk_pct": 1.0,
+        "pass": 0.1289,
+        "fail": 0.253,
+        "timeout": 0.6181,
+        "median_days": 36.0
+      },
+      {
+        "risk_pct": 1.5,
+        "pass": 0.2711,
+        "fail": 0.4546,
+        "timeout": 0.2743,
+        "median_days": 27.0
+      },
+      {
+        "risk_pct": 2.0,
+        "pass": 0.3511,
+        "fail": 0.5484,
+        "timeout": 0.1005,
+        "median_days": 19.0
+      }
+    ]
+  },
+  "verdict": "REJETÉ",
+  "yearly_r": {
+    "2023": {
+      "trades": 139,
+      "total_r": 9.59,
+      "expectancy_r": 0.069
+    },
+    "2024": {
+      "trades": 190,
+      "total_r": 24.55,
+      "expectancy_r": 0.129
+    },
+    "2025": {
+      "trades": 190,
+      "total_r": 28.77,
+      "expectancy_r": 0.151
+    },
+    "2026": {
+      "trades": 140,
+      "total_r": -10.48,
+      "expectancy_r": -0.075
+    }
+  }
+}
