@@ -3,14 +3,15 @@ import sys
 import tempfile
 import unittest
 
+import numpy as np
 import pandas as pd
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from tradebot.backtest import Costs, Signal, run_backtest  # noqa: E402
 from tradebot.data import load_csv, synthetic  # noqa: E402
-from tradebot.optimize import walk_forward  # noqa: E402
-from tradebot.propfirm import no_edge_pass_probability, simulate_challenge  # noqa: E402
+from tradebot.optimize import Grid, TradeSet, make_folds  # noqa: E402
+from tradebot.propfirm import no_edge_pass_probability, simulate_challenge, simulate_from_daily  # noqa: E402
 from tradebot.risk import PropRules, RiskManager  # noqa: E402
 from tradebot.strategies import GoldBreakoutStrategy, ORBStrategy  # noqa: E402
 
@@ -140,12 +141,70 @@ class TestGold(unittest.TestCase):
             self.assertTrue(7 <= t.entry_time.hour <= 20)
 
 
-class TestWalkForward(unittest.TestCase):
-    def test_random_walk_is_not_robust_by_construction(self):
-        res = walk_forward(synthetic(days=90, seed=3), ORBStrategy, {"rr": [1.0, 2.0], "range_minutes": [15, 30]},
-                           n_folds=3, min_trades=5)
-        self.assertEqual(len(res["folds"]), 3)
-        self.assertIn("robust", res)
+class TestLoopEngineering(unittest.TestCase):
+    def test_folds_roll_forward(self):
+        folds = make_folds("2023-01-01", "2026-01-01", 12, 6)
+        self.assertEqual(len(folds), 4)
+        self.assertEqual(folds[0][1], pd.Timestamp("2024-01-01"))
+        self.assertEqual(folds[-1][2], pd.Timestamp("2026-01-01"))
+
+    def test_plateau_beats_isolated_peak(self):
+        # 5 valeurs d'un paramètre : un pic isolé (indice 0) et un plateau (indices 2-4)
+        rng = np.random.default_rng(0)
+        times = pd.date_range("2024-01-01", periods=200, freq="D").to_numpy()
+        means = [0.40, -0.30, 0.25, 0.25, 0.25]
+        sets = [TradeSet(times, rng.normal(m, 1.0, 200)) for m in means]
+        g = Grid({"x": [1, 2, 3, 4, 5]})
+        best = g.select(sets, pd.Timestamp("2024-01-01", tz="UTC"), pd.Timestamp("2025-01-01", tz="UTC"), 10)
+        self.assertEqual(g.params[best]["x"], 4)
+
+    def test_lab_end_to_end(self):
+        from tradebot.lab import format_lab, run_lab
+        df = synthetic(days=420, seed=5, start="2025-01-01")
+        with tempfile.TemporaryDirectory() as d:
+            res = run_lab(df, "orb", {"rr": [0, 2.0], "entry": ["breakout", "candle"]}, Costs(), "t", "synth",
+                          holdout_start="2026-01-01", train_months=6, test_months=3, min_trades=10, n_jobs=1, out_dir=d)
+            self.assertTrue(os.path.exists(os.path.join(d, "t.json")))
+        self.assertIn(res["params"]["rr"], (0, 2.0))
+        self.assertGreater(res["holdout"]["trades"], 20)
+        self.assertIn("VERDICT", format_lab(res))
+
+
+class TestPropFromTrades(unittest.TestCase):
+    def test_bootstrap_matches_formula_without_edge(self):
+        days = [np.array([1.0])] * 1500 + [np.array([-1.0])] * 1500  # espérance exactement nulle
+        sim = simulate_from_daily(days, 1.0, 10, 10, daily_loss_pct=None, n_sims=20_000)
+        self.assertAlmostEqual(sim["pass"], 0.5, delta=0.02)
+
+    def test_daily_loss_limit_counts_as_failure(self):
+        days = [np.array([-1.0] * 6)]  # 6 pertes de 1 % dans la journée, limite 5 %
+        sim = simulate_from_daily(days, 1.0, 10, 20, daily_loss_pct=5.0, max_days=1, n_sims=100)
+        self.assertEqual(sim["fail"], 0.0)  # le bot s'arrête à -4 % (ne prend pas le 5e trade)
+        days = [np.array([-2.5, -2.6])]      # pertes plus grosses que prévu (gaps)
+        self.assertEqual(simulate_from_daily(days, 1.0, 10, 20, daily_loss_pct=5.0, max_days=1, n_sims=100)["fail"], 1.0)
+
+
+class TestTrailing(unittest.TestCase):
+    def test_trailing_stop_locks_profit(self):
+        df = ny_bars([("10:00", 100, 100, 100, 100), ("10:05", 100, 101, 100, 101), ("10:10", 101, 106, 101, 106),
+                      ("10:15", 106, 106, 103, 104), ("10:20", 104, 104, 104, 104)])
+
+        class Trail(Scripted):
+            def manage(self, i, side, entry, stop, risk):
+                return df["close"].iloc[i] - 2
+
+        res = run_backtest(df, Trail({0: Signal(+1, stop=98)}), RiskManager(PropRules.unlimited()))
+        t = res.trades[0]
+        self.assertEqual(t.reason, "stop")
+        self.assertAlmostEqual(t.exit, 104)   # stop remonté de 98 à 106-2
+        self.assertAlmostEqual(t.r, 2.0)      # R calculé sur le risque INITIAL (2)
+
+    def test_orb_candle_entry(self):
+        df = ny_bars([("09:30", 100, 103, 99.5, 102.5), ("09:35", 102.5, 103, 102, 102.8), ("15:50", 103, 104, 103, 104)])
+        res = run_backtest(df, ORBStrategy(range_minutes=5, entry="candle", rr=0), RiskManager(PropRules.unlimited()))
+        t = res.trades[0]
+        self.assertEqual((t.side, t.entry, t.stop), (1, 102.5, 99.5))
+        self.assertEqual(t.reason, "sortie stratégie")
 
 
 class TestData(unittest.TestCase):
@@ -161,6 +220,18 @@ class TestData(unittest.TestCase):
             os.unlink(f.name)
         self.assertEqual(df.index[0], pd.Timestamp("2026-03-10 14:30", tz="UTC"))
         self.assertEqual(df["volume"].iloc[0], 812)
+
+    def test_histdata_zip(self):
+        import zipfile
+        from tradebot.histdata import load
+        rows = "".join(f"20250715 0930{s:02d};100;101;99;100.5;0\n".replace("0930" + f"{s:02d}", f"09{30 + s}00")
+                       for s in range(10))
+        with tempfile.TemporaryDirectory() as d:
+            with zipfile.ZipFile(os.path.join(d, "xauusd_2025.zip"), "w") as z:
+                z.writestr("DAT_ASCII_XAUUSD_M1_2025.csv", rows)
+            df = load(os.path.join(d, "*.zip"), freq="5min")
+        self.assertEqual(len(df), 2)
+        self.assertEqual(df.index[0], pd.Timestamp("2025-07-15 13:30", tz="UTC"))  # 9h30 New York (heure d'été)
 
 
 class FakeMT5:

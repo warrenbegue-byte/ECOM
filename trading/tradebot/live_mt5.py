@@ -57,6 +57,7 @@ def run_live(strategy, symbol: str = "XAUUSD", timeframe: str = "M5", risk_pct: 
 
     strategy.reset()
     last_bar, cur_day, day_start = None, None, acc.equity
+    init_risk: dict[int, float] = {}  # risque initial (1 R) par ticket, pour le breakeven
 
     def my_positions():
         return [p for p in (mt5.positions_get(symbol=symbol) or []) if p.magic == magic]
@@ -104,6 +105,13 @@ def run_live(strategy, symbol: str = "XAUUSD", timeframe: str = "M5", risk_pct: 
             positions = my_positions()
             pos = 0 if not positions else (1 if positions[0].type == mt5.POSITION_TYPE_BUY else -1)
             strategy.prepare(df)
+            if positions and hasattr(strategy, "manage"):
+                for p in positions:  # stop suiveur / breakeven : on ne fait que resserrer le SL
+                    risk0 = init_risk.setdefault(p.ticket, abs(p.price_open - p.sl) if p.sl else 0.0)
+                    new = strategy.manage(len(df) - 1, pos, p.price_open, p.sl, risk0)
+                    if p.sl and new is not None and (new - p.sl) * pos > 0:
+                        send({"action": mt5.TRADE_ACTION_SLTP, "symbol": symbol, "position": p.ticket,
+                              "sl": round(new, mt5.symbol_info(symbol).digits), "tp": p.tp, "magic": magic})
             sig = strategy.signal(len(df) - 1, pos)
             if sig is None:
                 continue

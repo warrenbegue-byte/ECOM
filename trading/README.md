@@ -41,26 +41,32 @@ Dans MT5 : activer le bouton **Algo Trading** (barre d'outils) et cocher
 cd trading
 pip install -r requirements.txt
 
-# 1) Vos chances de réussir un challenge prop firm (reel 5)
+# 0) Télécharger l'historique 1 minute gratuit (HistData.com, ~5 Mo par an et par marché)
+python run.py download xauusd 2023      # or
+python run.py download nsxusd 2023      # Nasdaq 100
+
+# 1) Optimiser PUIS tester un bot (walk-forward + test 2026 jamais vu + frais x2 + prop firm)
+python run.py optimize orb_nasdaq        --histdata "data/nsxusd_*.zip"
+python run.py optimize orb_gold          --histdata "data/xauusd_*.zip"
+python run.py optimize gold_breakout     --histdata "data/xauusd_*.zip"
+python run.py optimize gold_breakout_m15 --histdata "data/xauusd_*.zip"
+#    -> écrit params/<bot>.json (paramètres optimisés + tous les résultats)
+
+# 2) Re-tester les paramètres optimisés, avec les règles de votre prop firm
+python run.py backtest --params params/orb_nasdaq.json --histdata "data/nsxusd_*.zip" --from 2026-01-01 --risk 0.5
+
+# 3) Vos chances de réussir un challenge avec un taux de réussite / RR donné
 python run.py prop --win-rate 0.45 --rr 2 --risk 0.5 --target 10 --max-loss 10 --daily-loss 5 --fee 500
 
-# 2) Backtest ORB New York sur le Nasdaq (reel 3)
-python run.py backtest orb --yf QQQ --interval 5m --spread 0.01 --target 0
-python run.py backtest orb --yf NQ=F --interval 5m --point-value 20      # futures NQ
+# 4) Bot live MT5 avec les paramètres optimisés — SIMULATION (aucun ordre envoyé)
+python run.py live --params params/orb_nasdaq.json --symbol US100 --risk 0.5
 
-# 3) Backtest du bot or sur un export MT5 (reel 6) — serveur broker en UTC+2
-python run.py backtest gold --csv XAUUSD_M5.csv --tz-in Etc/GMT-2 --point-value 100 --qty-step 0.01 --spread 0.25
-
-# 4) Loop Engineering sans se mentir (reel 4)
-python run.py optimize orb --yf QQQ --interval 5m
-
-# 5) Bot live MT5 — SIMULATION (aucun ordre envoyé, juste les logs)
-python run.py live gold --symbol XAUUSD --timeframe M5 --risk 0.25
-
-# 6) Bot live MT5 — ordres réels sur le compte DÉMO
-python run.py live gold --symbol XAUUSD --timeframe M5 --risk 0.25 --live
-python run.py live orb  --symbol US100  --timeframe M5 --risk 0.25 --live   # le nom du symbole dépend du broker
+# 5) Bot live MT5 — ordres réels sur le compte DÉMO
+python run.py live --params params/orb_nasdaq.json --symbol US100 --risk 0.5 --live
 ```
+
+Le nom du symbole dépend du broker (`US100`, `NAS100`, `USTEC`… / `XAUUSD`, `GOLD`).
+Vérifiez aussi le décalage horaire de son serveur (`--server-utc-offset`, souvent 2 l'hiver et 3 l'été).
 
 Règles prop firm réglables partout : `--account 100000 --target 10 --daily-loss 5 --max-loss 10 [--trailing]`
 (`--target 0` = pas d'objectif, pour un compte perso).
@@ -110,16 +116,22 @@ réel, exigez : ≥ 1 an de données (export MT5), ≥ 200 trades, walk-forward 
 
 ```
 trading/
-├── run.py                  # ligne de commande : prop | backtest | optimize | live
+├── run.py                  # ligne de commande : download | optimize | backtest | prop | live
 ├── LOOP.md                 # prompt pour faire du « Loop Engineering » avec Claude
+├── RESULTATS.md            # résultats détaillés de l'optimisation et des tests
+├── params/                 # paramètres optimisés (un .json par bot) + tous leurs résultats
+├── data/                   # historiques téléchargés (non versionnés)
 ├── requirements.txt
 ├── tradebot/
 │   ├── data.py             # CSV, export MT5, Yahoo Finance, données synthétiques
+│   ├── histdata.py         # téléchargement / lecture de l'historique 1 min HistData.com
 │   ├── risk.py             # règles prop firm + taille de position
-│   ├── backtest.py         # backtester prudent (stop prioritaire, spread, gaps)
+│   ├── backtest.py         # backtester prudent (stop prioritaire, spread, gaps, stop suiveur)
 │   ├── strategies.py       # ORBStrategy (NY) + GoldBreakoutStrategy (XAUUSD)
-│   ├── optimize.py         # walk-forward anti-surapprentissage
-│   ├── propfirm.py         # formule L/(L+T) + Monte Carlo
+│   ├── presets.py          # marchés, frais réalistes et grilles d'optimisation de chaque bot
+│   ├── optimize.py         # Loop Engineering : walk-forward, plateau, calcul parallèle
+│   ├── lab.py              # optimiser -> tester sur 2026 -> frais x2 -> prop firm -> params/*.json
+│   ├── propfirm.py         # formule L/(L+T), Monte Carlo, rejeu des vrais trades, risque optimal
 │   └── live_mt5.py         # bot MetaTrader 5 local (simulation par défaut, démo exigée)
 └── tests/test_tradebot.py  # python -m unittest discover -s tests
 ```

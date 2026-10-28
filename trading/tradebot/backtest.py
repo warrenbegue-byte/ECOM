@@ -5,7 +5,9 @@ Conventions (pour ne pas se mentir) :
 - le spread et la commission sont payés à chaque trade ;
 - si le stop et l'objectif sont touchés dans la même bougie, on considère le STOP ;
 - un gap au-delà du stop est exécuté au prix d'ouverture (pire prix) ;
-- Signal(side=0) = sortie immédiate à la clôture de la bougie courante.
+- Signal(side=0) = sortie immédiate à la clôture de la bougie courante ;
+- si la stratégie a une méthode manage(i, side, entry, stop, risk), elle peut resserrer
+  le stop à chaque clôture (stop suiveur, breakeven) — jamais l'élargir.
 """
 from __future__ import annotations
 
@@ -47,6 +49,7 @@ class Trade:
     reason: str = ""
     pnl: float = 0.0
     r: float = 0.0
+    risk: float = 0.0  # distance initiale du stop (1 R)
 
 
 @dataclass
@@ -93,6 +96,7 @@ def run_backtest(df: pd.DataFrame, strategy, risk: RiskManager | None = None,
     costs = costs or Costs()
     strategy.reset()
     strategy.prepare(df)
+    manage = getattr(strategy, "manage", None)
 
     o, h, l, c = (df[k].to_numpy() for k in ("open", "high", "low", "close"))
     times = df.index
@@ -109,7 +113,7 @@ def run_backtest(df: pd.DataFrame, strategy, risk: RiskManager | None = None,
         pos.exit_time, pos.exit, pos.reason = times[i], price, reason
         gross = pos.side * (price - pos.entry) * pos.qty * costs.point_value
         pos.pnl = gross - 2 * costs.commission * pos.qty
-        risk_amt = abs(pos.entry - pos.stop) * pos.qty * costs.point_value
+        risk_amt = pos.risk * pos.qty * costs.point_value
         pos.r = pos.pnl / risk_amt if risk_amt else 0.0
         equity += pos.pnl
         trades.append(pos)
@@ -131,7 +135,7 @@ def run_backtest(df: pd.DataFrame, strategy, risk: RiskManager | None = None,
                     target = fill + side * pending.rr * abs(fill - stop)
                 qty = risk.size(equity, day_start, fill, stop, costs.point_value, costs.qty_step, costs.min_qty)
                 if qty > 0:
-                    pos = Trade(side, times[i], fill, stop, target, qty)
+                    pos = Trade(side, times[i], fill, stop, target, qty, risk=abs(fill - stop))
         pending = None
 
         # 2) stop / objectif dans la bougie
@@ -162,6 +166,12 @@ def run_backtest(df: pd.DataFrame, strategy, risk: RiskManager | None = None,
                 curve[i] = equity
             elif sig.side != 0 and pos is None and risk.status == "active":
                 pending = sig
+
+        # 5) gestion du stop pour la bougie suivante
+        if pos is not None and manage is not None:
+            new = manage(i, pos.side, pos.entry, pos.stop, pos.risk)
+            if new is not None and (new - pos.stop) * pos.side > 0 and (c[i] - new) * pos.side > 0:
+                pos.stop = new
 
     eq = pd.Series(curve, index=times, name="equity")
     res = Result(trades, eq, start, risk.status, risk.reason)
