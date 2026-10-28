@@ -35,7 +35,8 @@ ECOM/
 ├── research/           # Études de niche, analyses concurrence, winning products
 ├── copy/               # Fiches produits, scripts Ads, séquences email
 ├── seo/                # Recherche de mots-clés, structure collections, briefs
-└── offers/             # Bundles, upsells, cross-sells, matrices d'offres
+├── offers/             # Bundles, upsells, cross-sells, matrices d'offres
+└── trading/            # Bots de trading (ORB NY, XAUUSD, prop firm, walk-forward, live MT5)
 ```
 
 ---
